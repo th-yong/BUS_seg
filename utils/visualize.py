@@ -1,7 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 
-def visualize_with_mask(dataset, output_file="visualization.png", figsize=(15, 6)):
+def visualize_with_mask(dataset_name, dataset, output_file="visualization.png", figsize=(15, 6)):
     num_samples = 10  # Total number of samples to display
     _, axes = plt.subplots(2, 5, figsize=figsize)
 
@@ -23,7 +23,7 @@ def visualize_with_mask(dataset, output_file="visualization.png", figsize=(15, 6
 
         # Display the original image
         axes[row, col].imshow(image_np)
-        axes[row, col].set_title(f"Original {i+1}")
+        axes[row, col].set_title(f"{dataset_name} {i+1}")
         axes[row, col].axis("off")
 
         # Display the overlay image
