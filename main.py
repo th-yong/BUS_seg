@@ -9,7 +9,7 @@ from data.dataset import BreastUltrasoundDataset, split_dataset
 from data.transforms import get_transform
 from models.unet import UNet
 from utils.dice_loss import DiceLoss, dice_score
-from utils.visualize import print_training_info
+from utils.visualize import print_training_info, visualize_with_mask
 
 if __name__ == "__main__":
     # Argument parsing
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     elif args.dataset == "fuzzy":
         dataset_name = "fuzzy"
         selected_dataset = BreastUltrasoundDataset(fuzzy_benign_path, ground_truth_path, transform=transform)
-
+    
     dataset_size = len(selected_dataset)
 
     train_size = int(0.7 * dataset_size)
@@ -47,6 +47,9 @@ if __name__ == "__main__":
 
     train_dataset, val_dataset, test_dataset = split_dataset(selected_dataset, test_ratio=0.1, val_ratio=0.2, random_seed=42)
 
+    visualize_with_mask(test_dataset, output_file=f'./config/{dataset_name}_Benign_Overlay.png')
+
+    
     # Initialize batch size, num_epochs and patience
     batch_size = 8
     num_epochs = 100
