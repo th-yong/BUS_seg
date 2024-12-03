@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     train_dataset, val_dataset, test_dataset = split_dataset(selected_dataset, test_ratio=0.1, val_ratio=0.2, random_seed=42)
 
-    visualize_with_mask(test_dataset, output_file=f'./config/{dataset_name}_Benign_Overlay.png')
+    visualize_with_mask(dataset_name, test_dataset, output_file=f'./config/{dataset_name}_Benign_Overlay.png')
 
     
     # Initialize batch size, num_epochs and patience
