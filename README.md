@@ -69,9 +69,7 @@ pip install -r requirements.txt
 
 This project allows training and testing segmentation models on the **MT_Small_Dataset**. Depending on your use case, you can choose between the **Original_Benign** or **Fuzzy_Benign** datasets.
 
----
-
-### Training
+### Train
 
 To train the segmentation model, run the following command:
 
@@ -82,9 +80,8 @@ python main.py --mode train --dataset fuzzy
 - **Arguments**:
   - `--mode`: Specifies the mode of execution. Use `train` to start training.
   - `--dataset`: Specifies which dataset to use. Options are `original` or `fuzzy`.
----
 
-### Testing
+### Test
 
 To test a saved segmentation model, run the following command:
 
@@ -109,8 +106,6 @@ The segmentation model is evaluated using the **Dice Coefficient Score**, which 
 ./results/best_model_fuzzy_valdice_0.85.pth
 ```
 
----
-
 ### Example Output
 
 - **Training**:
@@ -125,8 +120,6 @@ Best model saved as ./results/best_model_fuzzy_valdice_0.85.pth with Val Dice: 0
 Testing model: ./results/best_model_fuzzy_valdice_0.85.pth
 Test Dice Score: 0.8420
 ```
-
----
 
 ### Directory Structure
 
