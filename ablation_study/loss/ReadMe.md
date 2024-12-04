@@ -3,10 +3,6 @@
 ## Objective
 The goal of this experiment is to identify the most effective loss function for breast ultrasound segmentation by evaluating the performance of different commonly used loss functions. Based on the study by Han, Yuexing, et al. (2021), we will compare the following loss functions:
 
-### Reference
-> [1] Han, Yuexing, et al. "Boundary loss-based 2.5 D fully convolutional neural networks approach for segmentation: a case study of the liver and tumor on computed tomography." Algorithms 14.5 (2021): 144.  
-> [2] https://www.kaggle.com/code/sungjunghwan/loss-function-of-image-segmentation
-
 ---
 
 ## Loss Functions
@@ -113,3 +109,9 @@ Below is a bar chart summarizing the test Dice Scores for each loss function:
 <div style="text-align: center;">
 <img src="./results/evaluation_results_test.png" alt="Evaluation Results" style="width:60%;"/>
 </div>
+
+---
+
+### Reference
+> [1] Han, Yuexing, et al. "Boundary loss-based 2.5 D fully convolutional neural networks approach for segmentation: a case study of the liver and tumor on computed tomography." Algorithms 14.5 (2021): 144.  
+> [2] https://www.kaggle.com/code/sungjunghwan/loss-function-of-image-segmentation
