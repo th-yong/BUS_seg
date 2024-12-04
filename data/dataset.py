@@ -52,7 +52,7 @@ def split_dataset(dataset, test_ratio=0.1, val_ratio=0.2, random_seed=42):
     train_val_indices, test_indices = train_test_split(all_indices, test_size=test_size, random_state=random_seed)
 
     # Split Train and Validation
-    train_size = int(len(train_val_indices) * (1 - val_ratio))
+    train_size = int(total_size * (1 - val_ratio - test_ratio))
     train_indices, val_indices = train_test_split(train_val_indices, test_size=len(train_val_indices) - train_size, random_state=random_seed)
 
     # Create subsets
