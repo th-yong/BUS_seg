@@ -8,8 +8,21 @@ import argparse
 from data.dataset import BreastUltrasoundDataset, split_dataset
 from data.transforms import get_transform
 from models.unet import UNet
+from models.attention_unet import AttentionUNet
+from models.unet_plus import NestedUNet
+from models.CMUNeXt import CMUNeXt
+from models.SegResNet import SegResNet
 from utils.loss_function import *
 from utils.visualize import print_training_info, visualize_with_mask, save_validation_images, save_test_images
+
+# Map network names to model classes
+NETWORKS = {
+    "unet": UNet,
+    "attention_unet": AttentionUNet,
+    "unet_plus" : NestedUNet,
+    "CMUNeXt" : CMUNeXt,
+    "SegResNet" : SegResNet,
+}
 
 if __name__ == "__main__":
     # Argument parsing
@@ -18,6 +31,8 @@ if __name__ == "__main__":
                         help="Specify whether to train or test the model: 'train' or 'test'")
     parser.add_argument('--dataset', type=str, required=True, choices=['original', 'fuzzy'], 
                         help="Specify the dataset to use: 'original' or 'fuzzy'")
+    parser.add_argument('--network', type=str, required=True, choices=NETWORKS.keys(),
+                        help="Specify the network architecture to use: " + ", ".join(NETWORKS.keys()))
     parser.add_argument('--model_path', type=str, required=False, default="./results/best_model.pth",
                         help="Path to the model file for testing (only used in 'test' mode).")
     args = parser.parse_args()
@@ -53,7 +68,7 @@ if __name__ == "__main__":
 
     # Initialize model, loss, and optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = UNet().to(device)
+    model = NETWORKS[args.network]().to(device)
     criterion = DiceLoss()
 
     if args.mode == "train":
@@ -127,16 +142,16 @@ if __name__ == "__main__":
             print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Dice: {val_dice:.4f}")
 
             if val_loss < best_val_loss:
-                if os.path.exists(f"./results/best_model_{dataset_name}_valloss_{best_val_loss:.2f}.pth"):
-                    os.remove(f"./results/best_model_{dataset_name}_valloss_{best_val_loss:.2f}.pth")
-                    os.remove(f"./results/validation_{dataset_name}_valloss_{best_val_loss:.2f}.png")
+                if os.path.exists(f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth"):
+                    os.remove(f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth")
+                    os.remove(f"./results/{args.network}_validation_{dataset_name}_valloss_{best_val_loss:.2f}.png")
 
                 best_val_loss = val_loss
-                model_save_path = f"./results/best_model_{dataset_name}_valloss_{best_val_loss:.2f}.pth"
+                model_save_path = f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth"
                 torch.save(model.state_dict(), model_save_path)
                 print(f"Best model saved as {model_save_path} with Val Loss: {best_val_loss:.4f}")
                 
-                save_validation_images(all_images, all_masks, all_preds, output_file=f"./results/validation_{dataset_name}_valloss_{best_val_loss:.2f}.png")
+                save_validation_images(all_images, all_masks, all_preds, output_file=f"./results/{args.network}_validation_{dataset_name}_valloss_{best_val_loss:.2f}.png")
 
     elif args.mode == "test":
         # Test logic
@@ -221,4 +236,4 @@ if __name__ == "__main__":
         all_masks = torch.cat(all_masks, dim=0)
         all_preds = torch.cat(all_preds, dim=0)
         
-        save_test_images(all_images, all_masks, all_preds, output_file=f"./results/test_{dataset_name}.png")
+        save_test_images(all_images, all_masks, all_preds, output_file=f"./results/{args.network}_test_{dataset_name}.png")
