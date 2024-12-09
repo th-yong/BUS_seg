@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-
+# Residual connection block
 class Residual(nn.Module):
     def __init__(self, fn):
         super().__init__()
@@ -10,9 +10,16 @@ class Residual(nn.Module):
     def forward(self, x):
         return self.fn(x) + x
 
-
+# CMUNeXt block definition
 class CMUNeXtBlock(nn.Module):
     def __init__(self, ch_in, ch_out, depth=1, k=3):
+        """
+        Args:
+            ch_in: Number of input channels.
+            ch_out: Number of output channels.
+            depth: Number of sequential CMUNeXt blocks.
+            k: Kernel size for depthwise convolution.
+        """
         super(CMUNeXtBlock, self).__init__()
         self.block = nn.Sequential(
             *[nn.Sequential(
@@ -37,9 +44,14 @@ class CMUNeXtBlock(nn.Module):
         x = self.up(x)
         return x
 
-
+# Convolutional block
 class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out):
+        """
+        Args:
+            ch_in: Number of input channels.
+            ch_out: Number of output channels.
+        """
         super(conv_block, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1, padding=1, bias=True),
@@ -51,9 +63,14 @@ class conv_block(nn.Module):
         x = self.conv(x)
         return x
 
-
+# Up-sampling block
 class up_conv(nn.Module):
     def __init__(self, ch_in, ch_out):
+        """
+        Args:
+            ch_in: Number of input channels.
+            ch_out: Number of output channels.
+        """
         super(up_conv, self).__init__()
         self.up = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear'),
@@ -66,9 +83,14 @@ class up_conv(nn.Module):
         x = self.up(x)
         return x
 
-
+# Fusion block for merging features
 class fusion_conv(nn.Module):
     def __init__(self, ch_in, ch_out):
+        """
+        Args:
+            ch_in: Number of input channels.
+            ch_out: Number of output channels.
+        """
         super(fusion_conv, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(ch_in, ch_in, kernel_size=3, stride=1, padding=1, groups=2, bias=True),
@@ -86,7 +108,7 @@ class fusion_conv(nn.Module):
         x = self.conv(x)
         return x
 
-
+# CMUNeXt model definition
 class CMUNeXt(nn.Module):
     def __init__(self, input_channel=3, num_classes=1, dims=[16, 32, 128, 160, 256], depths=[1, 1, 1, 3, 1], kernels=[3, 3, 7, 7, 7]):
         """
@@ -118,6 +140,7 @@ class CMUNeXt(nn.Module):
         self.Conv_1x1 = nn.Conv2d(dims[0], num_classes, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
+        # Encoding path
         x1 = self.stem(x)
         x1 = self.encoder1(x1)
         x2 = self.Maxpool(x1)
@@ -129,6 +152,7 @@ class CMUNeXt(nn.Module):
         x5 = self.Maxpool(x4)
         x5 = self.encoder5(x5)
 
+        # Decoding path
         d5 = self.Up5(x5)
         d5 = torch.cat((x4, d5), dim=1)
         d5 = self.Up_conv5(d5)
@@ -148,7 +172,7 @@ class CMUNeXt(nn.Module):
 
         return torch.sigmoid(d1)
 
-
+# Variants of CMUNeXt with different dimensions and depths
 def cmunext(dims=[16, 32, 128, 160, 256], depths=[1, 1, 1, 3, 1], kernels=[3, 3, 7, 7, 7]):
     return CMUNeXt(dims=dims, depths=depths, kernels=kernels)
 

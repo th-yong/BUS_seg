@@ -2,12 +2,22 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Function to visualize dataset with masks
 def visualize_with_mask(dataset_name, dataset, output_file="visualization.png", figsize=(15, 6)):
+    """
+    Visualizes the dataset images with overlayed masks.
+
+    Args:
+        dataset_name (str): Name of the dataset (e.g., 'Original', 'Fuzzy').
+        dataset: Dataset object containing images and masks.
+        output_file (str): File path to save the visualization.
+        figsize (tuple): Size of the visualization figure.
+    """
     num_samples = 10  # Total number of samples to display
     _, axes = plt.subplots(2, 5, figsize=figsize)
 
     for i in range(num_samples):
-        # Load the image and mask
+        # Load image and mask
         image, mask = dataset[i]
 
         # Prepare image and mask for visualization
@@ -18,17 +28,17 @@ def visualize_with_mask(dataset_name, dataset, output_file="visualization.png", 
         overlay = image_np.copy()
         overlay[..., 0] = image_np[..., 0] * (1 - mask_np) + mask_np  # Add mask to red channel
 
-        # Determine the row and column position
+        # Determine subplot position
         row = i // 5
         col = i % 5
 
-        # Display the original image
+        # Display the image
         axes[row, col].imshow(image_np)
         axes[row, col].set_title(f"{dataset_name} {i+1}")
         axes[row, col].axis("off")
 
-        # Display the overlay image
-        overlay_ax = axes[row, col].twinx()  # Overlay on the same subplot
+        # Overlay mask with transparency
+        overlay_ax = axes[row, col].twinx()
         overlay_ax.imshow(overlay, alpha=0.7)
         overlay_ax.axis("off")
 
@@ -39,18 +49,17 @@ def visualize_with_mask(dataset_name, dataset, output_file="visualization.png", 
 # Function to print training information
 def print_training_info(model, optimizer, scheduler, device, num_epochs, train_size, val_size, batch_size):
     """
-    Print training parameters and environment details.
+    Prints key information about the training setup.
 
     Args:
-        model: PyTorch model.
+        model: PyTorch model being trained.
         optimizer: Optimizer used for training.
         scheduler: Learning rate scheduler.
         device: Device (CPU or GPU).
-        num_epochs (int): Number of epochs.
+        num_epochs (int): Number of epochs for training.
         train_size (int): Size of the training dataset.
         val_size (int): Size of the validation dataset.
-        test_size (int): Size of the test dataset.
-        batch_size (int): Batch size.
+        batch_size (int): Batch size for training.
     """
     print("\n=== Training Information ===")
     print(f"Device: {device}")
@@ -63,8 +72,19 @@ def print_training_info(model, optimizer, scheduler, device, num_epochs, train_s
     print(f"Validation Dataset Size: {val_size}")
     print(f"Learning Rate: {optimizer.param_groups[0]['lr']}")
     print("\n============================\n")
-    
+
+# Function to save validation results
 def save_validation_images(images, masks, preds, output_file="validation_overlay.png", alpha=0.7):
+    """
+    Saves validation images with overlaid ground truth and predictions.
+
+    Args:
+        images: Batch of validation images.
+        masks: Corresponding ground truth masks.
+        preds: Model predictions.
+        output_file (str): File path to save the visualization.
+        alpha (float): Transparency level for overlays.
+    """
     images = images.permute(0, 2, 3, 1).cpu().numpy()  # Convert [B, C, H, W] -> [B, H, W, C]
     masks = masks.squeeze(1).cpu().numpy()
     preds = preds.squeeze(1).cpu().numpy()
@@ -78,15 +98,13 @@ def save_validation_images(images, masks, preds, output_file="validation_overlay
     for i, ax in enumerate(axes):
             if i < num_samples:
                 # Create overlay
-                overlay = images[i].copy()  # Repeat along the last axis
-                overlay[..., 0] = overlay[..., 0] * (1 - masks[i]) + masks[i]  # Add mask to red channel
-                overlay[..., 1] = overlay[..., 1] * (1 - preds[i]) + preds[i]  # Add prediction to green channel
+                overlay = images[i].copy()
+                overlay[..., 0] = overlay[..., 0] * (1 - masks[i]) + masks[i]  # Mask in red
+                overlay[..., 1] = overlay[..., 1] * (1 - preds[i]) + preds[i]  # Prediction in green
 
-                # Display the original image
+                # Display the original image with overlay
                 ax.imshow(images[i], cmap="gray")
                 ax.axis("off")
-
-                # Overlay on the same subplot
                 ax.imshow(overlay, alpha=0.7)
                 ax.set_title(f"Val {i+1}", fontsize=8)
             else:
@@ -97,8 +115,18 @@ def save_validation_images(images, masks, preds, output_file="validation_overlay
     plt.cla()   
     plt.clf()   
     plt.close() 
-    
+
+# Function to save test results
 def save_test_images(images, masks, preds, output_file="test_overlay.png"):
+    """
+    Saves test images with overlaid ground truth and predictions.
+
+    Args:
+        images: Batch of test images.
+        masks: Corresponding ground truth masks.
+        preds: Model predictions.
+        output_file (str): File path to save the visualization.
+    """
     images = images.permute(0, 2, 3, 1).cpu().numpy()  # Convert [B, C, H, W] -> [B, H, W, C]
     masks = masks.squeeze(1).cpu().numpy()
     preds = preds.squeeze(1).cpu().numpy()
@@ -112,15 +140,13 @@ def save_test_images(images, masks, preds, output_file="test_overlay.png"):
     for i, ax in enumerate(axes):
             if i < num_samples:
                 # Create overlay
-                overlay = images[i].copy()  # Repeat along the last axis
-                overlay[..., 0] = overlay[..., 0] * (1 - masks[i]) + masks[i]  # Add mask to red channel
-                overlay[..., 1] = overlay[..., 1] * (1 - preds[i]) + preds[i]  # Add prediction to green channel
+                overlay = images[i].copy()
+                overlay[..., 0] = overlay[..., 0] * (1 - masks[i]) + masks[i]  # Mask in red
+                overlay[..., 1] = overlay[..., 1] * (1 - preds[i]) + preds[i]  ## Prediction in green
 
-                # Display the original image
+                # Display the original image with overlay
                 ax.imshow(images[i], cmap="gray")
                 ax.axis("off")
-
-                # Overlay on the same subplot
                 ax.imshow(overlay, alpha=0.7)
                 ax.set_title(f"Test {i+1}", fontsize=8)
             else:
@@ -128,3 +154,4 @@ def save_test_images(images, masks, preds, output_file="test_overlay.png"):
 
     plt.tight_layout()
     plt.savefig(output_file, dpi=300)
+    plt.close() 

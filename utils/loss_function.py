@@ -2,7 +2,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Dice Loss: Measures the overlap between predicted and ground truth masks
 class DiceLoss(nn.Module):
+    """
+    Dice Loss for semantic segmentation tasks.
+    
+    Formula:
+        Dice = 2 * (|P ∩ G| + smooth) / (|P| + |G| + smooth)
+        Loss = 1 - Dice
+
+    Args:
+        smooth (float): Smoothing factor to avoid division by zero.
+    """
     def __init__(self):
         super(DiceLoss, self).__init__()
         self.smooth = 1.0
@@ -18,17 +29,31 @@ class DiceLoss(nn.Module):
         )
         return 1. - dsc
 
+# Cross-Entropy Loss: Pixel-wise classification loss
 class CrossEntropyLoss(nn.Module):
+    """
+    Cross-Entropy Loss for binary segmentation tasks.
+    
+    Formula:
+        Loss = -[y * log(y_pred) + (1 - y) * log(1 - y_pred)]
+    """
     def forward(self, y_pred, y_true):
         assert y_pred.size() == y_true.size()
         y_pred = y_pred[:, 0].contiguous().view(-1)
         y_true = y_true[:, 0].contiguous().view(-1)
         return F.binary_cross_entropy_with_logits(input=y_pred, target=y_true)
 
+# Contour Loss: Penalizes differences in edge gradients
 class ContourLoss(nn.Module):
+    """
+    Contour Loss to refine object boundaries by comparing gradients of predictions and ground truth.
+    
+    Formula:
+        Loss = MSE(pred_grad_x, true_grad_x) + MSE(pred_grad_y, true_grad_y)
+    """
     def __init__(self):
         super(ContourLoss, self).__init__()
-        # Define Sobel filters for x and y gradients
+        # Sobel filters for gradient computation
         self.sobel_x = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
         self.sobel_y = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
 
@@ -48,7 +73,18 @@ class ContourLoss(nn.Module):
 
         return contour_loss
 
+# Tversky Loss: Generalized Dice Loss with false positive and false negative penalties
 class TverskyLoss(nn.Module):
+    """
+    Tversky Loss for handling imbalanced datasets.
+    
+    Formula:
+        Tversky = (TP + smooth) / (TP + alpha * FP + beta * FN + smooth)
+        Loss = 1 - Tversky
+
+    Args:
+        smooth (float): Smoothing factor to avoid division by zero.
+    """
     def __init__(self):
         super(TverskyLoss, self).__init__()
         self.smooth = 1.0
@@ -58,7 +94,7 @@ class TverskyLoss(nn.Module):
         y_pred = y_pred[:, 0].contiguous().view(-1)
         y_true = y_true[:, 0].contiguous().view(-1)
         
-        #True Positives, False Positives & False Negatives
+        # True Positives, False Positives, False Negatives
         TP = (y_pred * y_true).sum()    
         FP = ((1-y_true) * y_pred).sum()
         FN = (y_true * (1-y_pred)).sum()
@@ -67,7 +103,11 @@ class TverskyLoss(nn.Module):
         
         return 1 - Tversky
 
+# Evaluation Metrics
 def dice_score(y_pred, y_true, smooth=1.0):
+    """
+    Calculates the Dice Coefficient.
+    """
     y_pred = (y_pred > 0.5).float() 
     y_pred = y_pred.contiguous().view(-1)
     y_true = y_true.contiguous().view(-1)
@@ -78,6 +118,9 @@ def dice_score(y_pred, y_true, smooth=1.0):
 
 
 def precision_score(y_pred, y_true):
+    """
+    Calculates precision: TP / (TP + FP).
+    """
     y_pred = (y_pred > 0.5).float()
     tp = ((y_pred == 1) & (y_true == 1)).sum().item()
     fp = ((y_pred == 1) & (y_true == 0)).sum().item()
@@ -87,6 +130,9 @@ def precision_score(y_pred, y_true):
 
 
 def recall_score(y_pred, y_true):
+    """
+    Calculates recall: TP / (TP + FN).
+    """
     y_pred = (y_pred > 0.5).float()
     tp = ((y_pred == 1) & (y_true == 1)).sum().item()
     fn = ((y_pred == 0) & (y_true == 1)).sum().item()
@@ -96,6 +142,9 @@ def recall_score(y_pred, y_true):
 
 
 def f1_score(y_pred, y_true):
+    """
+    Calculates F1 score: Harmonic mean of precision and recall.
+    """
     precision = precision_score(y_pred, y_true)
     recall = recall_score(y_pred, y_true)
     f1 = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
