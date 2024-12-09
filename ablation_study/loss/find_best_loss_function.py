@@ -14,7 +14,25 @@ from utils.loss_function import *
 from models.unet import UNet
 from utils.visualize import save_validation_images
 
+# Function to train the model
 def train_model(model, train_loader, val_loader, loss_function, optimizer, scheduler, device, num_epochs):
+    """
+    Train the segmentation model.
+
+    Args:
+        model: PyTorch model to be trained.
+        train_loader: DataLoader for the training dataset.
+        val_loader: DataLoader for the validation dataset.
+        loss_function: Loss function used for training.
+        optimizer: Optimizer for weight updates.
+        scheduler: Learning rate scheduler.
+        device: Device (CPU or GPU).
+        num_epochs (int): Number of training epochs.
+
+    Returns:
+        model: Trained model.
+        best_val_loss: Best validation loss achieved during training.
+    """
     best_val_loss = float('inf')
     best_val_dice = 0.0
     for epoch in range(num_epochs):
@@ -73,7 +91,19 @@ def train_model(model, train_loader, val_loader, loss_function, optimizer, sched
 
     return model, best_val_loss
 
+# Function to test the model
 def test_model(model, test_loader, device):
+    """
+    Evaluate the trained model on the test dataset.
+
+    Args:
+        model: Trained PyTorch model.
+        test_loader: DataLoader for the test dataset.
+        device: Device (CPU or GPU).
+
+    Returns:
+        test_dice (float): Dice score on the test dataset.
+    """
     model.eval()
     test_dice = 0.0
     with torch.no_grad():
@@ -86,6 +116,7 @@ def test_model(model, test_loader, device):
     print(f"Test Dice Score: {test_dice:.4f}")
     return test_dice
 
+# Function to plot evaluation results
 def plot_evaluation_results(loss_names, test_scores, output_file="evaluation_results.png"):
     """
     Plot evaluation results as a bar chart.
@@ -108,7 +139,6 @@ def plot_evaluation_results(loss_names, test_scores, output_file="evaluation_res
     plt.show()
 
 if __name__ == "__main__" :
-    
     # Argument parsing
     parser = argparse.ArgumentParser(description="Train or Test a segmentation model.")
     parser.add_argument("--mode", type=str, choices=["train", "test"], required=True,

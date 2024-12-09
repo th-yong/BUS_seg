@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Convolutional block: Two convolution layers followed by BatchNorm and ReLU activation
 class ConvBlock(nn.Module):
     def __init__(self, ch_in, ch_out):
         super().__init__()
@@ -21,7 +22,8 @@ class ConvBlock(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         return x
-    
+
+# Up-sampling block: Upsamples the input and applies a convolution
 class UpConvBlock(nn.Module):
     def __init__(self, ch_in, ch_out):
         super().__init__()
@@ -37,7 +39,8 @@ class UpConvBlock(nn.Module):
     def forward(self, x):
         x = x = self.up(x)
         return x
-    
+
+# Attention block: Learns to focus on the most relevant features using gating
 class AttentionBlock(nn.Module):
     def __init__(self, f_g, f_l, f_int):
         super().__init__()
@@ -74,11 +77,12 @@ class AttentionBlock(nn.Module):
         
         return psi*x
 
-
+# Attention U-Net: Encoder-Decoder architecture with attention mechanisms
 class AttentionUNet(nn.Module):
     def __init__(self, in_channel=3, out_channel=1):
         super().__init__() 
         
+        # Encoder blocks
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
         
         self.conv1 = ConvBlock(ch_in=in_channel, ch_out=64)
@@ -87,6 +91,7 @@ class AttentionUNet(nn.Module):
         self.conv4 = ConvBlock(ch_in=256, ch_out=512)
         self.conv5 = ConvBlock(ch_in=512, ch_out=1024)
         
+        # Decoder blocks with attention and up-convolutions
         self.up5 = UpConvBlock(ch_in=1024, ch_out=512)
         self.att5 = AttentionBlock(f_g=512, f_l=512, f_int=256)
         self.upconv5 = ConvBlock(ch_in=1024, ch_out=512)
@@ -102,12 +107,13 @@ class AttentionUNet(nn.Module):
         self.up2 = UpConvBlock(ch_in=128, ch_out=64)
         self.att2 = AttentionBlock(f_g=64, f_l=64, f_int=32)
         self.upconv2 = ConvBlock(ch_in=128, ch_out=64)
-        
+
+        # Final output layer
         self.conv_1x1 = nn.Conv2d(64, out_channel,
                                   kernel_size=1, stride=1, padding=0)
         
     def forward(self, x):
-        # encoder
+        # Encoding path
         x1 = self.conv1(x)
         
         x2 = self.maxpool(x1)
@@ -122,7 +128,7 @@ class AttentionUNet(nn.Module):
         x5 = self.maxpool(x4)
         x5 = self.conv5(x5)
         
-        # decoder + concat
+        # Decoding path with attention and concatenation
         d5 = self.up5(x5)
         x4 = self.att5(g=d5, x=x4)
         d5 = torch.concat((x4, d5), dim=1)
@@ -143,6 +149,7 @@ class AttentionUNet(nn.Module):
         d2 = torch.concat((x1, d2), dim=1)
         d2 = self.upconv2(d2)
         
+        # Output layer
         d1 = self.conv_1x1(d2)
         
         return torch.sigmoid(d1)

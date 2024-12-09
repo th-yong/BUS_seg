@@ -5,11 +5,20 @@ import torch.nn as nn
 
 
 class UNet(nn.Module):
+    """
+    U-Net: A convolutional neural network designed for semantic segmentation.
 
+    Args:
+        in_channels (int): Number of input channels (e.g., 3 for RGB images).
+        out_channels (int): Number of output channels (e.g., 1 for binary segmentation).
+        init_features (int): Number of initial feature maps in the encoder (default: 64).
+    """
     def __init__(self, in_channels=3, out_channels=1, init_features=64):
         super(UNet, self).__init__()
 
         features = init_features
+        
+        # Encoder path
         self.encoder1 = UNet._block(in_channels, features, name="enc1")
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.encoder2 = UNet._block(features, features * 2, name="enc2")
@@ -19,8 +28,10 @@ class UNet(nn.Module):
         self.encoder4 = UNet._block(features * 4, features * 8, name="enc4")
         self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
 
+        # Bottleneck
         self.bottleneck = UNet._block(features * 8, features * 16, name="bottleneck")
 
+        # Decoder path
         self.upconv4 = nn.ConvTranspose2d(
             features * 16, features * 8, kernel_size=2, stride=2
         )
@@ -38,18 +49,31 @@ class UNet(nn.Module):
         )
         self.decoder1 = UNet._block(features * 2, features, name="dec1")
 
+        # Final 1x1 convolution to output the desired number of channels
         self.conv = nn.Conv2d(
             in_channels=features, out_channels=out_channels, kernel_size=1
         )
 
     def forward(self, x):
+        """
+        Forward pass of the U-Net.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: Output tensor with shape (batch_size, out_channels, height, width).
+        """
+        # Encoder path
         enc1 = self.encoder1(x)
         enc2 = self.encoder2(self.pool1(enc1))
         enc3 = self.encoder3(self.pool2(enc2))
         enc4 = self.encoder4(self.pool3(enc3))
 
+        # Bottleneck
         bottleneck = self.bottleneck(self.pool4(enc4))
 
+        # Decoder path with skip connections
         dec4 = self.upconv4(bottleneck)
         dec4 = torch.cat((dec4, enc4), dim=1)
         dec4 = self.decoder4(dec4)
@@ -62,10 +86,23 @@ class UNet(nn.Module):
         dec1 = self.upconv1(dec2)
         dec1 = torch.cat((dec1, enc1), dim=1)
         dec1 = self.decoder1(dec1)
+
+        # Apply final 1x1 convolution and sigmoid activation for output
         return torch.sigmoid(self.conv(dec1))
 
     @staticmethod
     def _block(in_channels, features, name):
+        """
+        Creates a block of two convolutional layers, each followed by BatchNorm and ReLU.
+
+        Args:
+            in_channels (int): Number of input channels.
+            features (int): Number of output channels.
+            name (str): Name prefix for the block's layers.
+
+        Returns:
+            nn.Sequential: A sequential block of two convolutional layers.
+        """
         return nn.Sequential(
             OrderedDict(
                 [

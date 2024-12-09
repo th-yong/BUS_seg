@@ -15,7 +15,7 @@ from models.SegResNet import SegResNet
 from utils.loss_function import *
 from utils.visualize import print_training_info, visualize_with_mask, save_validation_images, save_test_images
 
-# Map network names to model classes
+# Mapping network names to model classes for dynamic selection
 NETWORKS = {
     "unet": UNet,
     "attention_unet": AttentionUNet,
@@ -25,7 +25,7 @@ NETWORKS = {
 }
 
 if __name__ == "__main__":
-    # Argument parsing
+    # Parse command-line arguments for training/testing mode, dataset, and network
     parser = argparse.ArgumentParser(description="Train or test segmentation model on breast ultrasound dataset.")
     parser.add_argument('--mode', type=str, required=True, choices=['train', 'test'], 
                         help="Specify whether to train or test the model: 'train' or 'test'")
@@ -41,16 +41,16 @@ if __name__ == "__main__":
                         help='segmentation network learning rate')
     args = parser.parse_args()
 
-    # Paths to data directories
+    # Define paths to the dataset directories
     data_dir = r"D:\DEV\BREAST-ULTRASOUND\MT_SMALL_DATASET"
     fuzzy_benign_path = os.path.join(data_dir, "Benign", "Fuzzy_Benign")
     original_benign_path = os.path.join(data_dir, "Benign", "Original_Benign")
     ground_truth_path = os.path.join(data_dir, "Benign", "Ground_Truth_Benign")
     
-    # Transformations
+    # Apply dataset-specific transformations
     transform = get_transform()
 
-    # Dataset selection based on input argument
+    # Select dataset based on input arguments
     if args.dataset == "original":
         dataset_name = "original"
         selected_dataset = BreastUltrasoundDataset(original_benign_path, ground_truth_path, transform=transform)
@@ -60,29 +60,33 @@ if __name__ == "__main__":
     
     dataset_size = len(selected_dataset)
 
+    # Split the dataset into training, validation, and test sets
     train_dataset, val_dataset, test_dataset = split_dataset(selected_dataset, test_ratio=0.1, val_ratio=0.2, random_seed=42)
 
     # visualize_with_mask(dataset_name, test_dataset, output_file=f'./config/{dataset_name}_Benign_Overlay.png')
 
     
-    # Initialize batch size, num_epochs and patience
+    # Define training parameters
     batch_size = 2
     num_epochs = args.num_epochs
     patience = 10
     lr = args.lr
-    # Initialize model, loss, and optimizer
+    
+    # Initialize the selected model and loss function
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = NETWORKS[args.network]().to(device)
     criterion = DiceLoss()
 
     if args.mode == "train":
+        # Setup optimizer and learning rate scheduler
         optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=patience)
 
+        # Create data loaders for training and validation
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-        # Print training information
+        # Print training configuration
         print_training_info(
             model=model,
             optimizer=optimizer,
@@ -102,6 +106,7 @@ if __name__ == "__main__":
             model.train()
             train_loss = 0.0
 
+            # Training phase
             for images, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}"):
                 images, masks = images.to(device), masks.to(device)
 
@@ -114,7 +119,7 @@ if __name__ == "__main__":
 
             train_loss /= len(train_loader)
 
-            # Validation
+            # Validation phase
             model.eval()
             val_loss = 0.0
             val_dice = 0.0
@@ -127,7 +132,7 @@ if __name__ == "__main__":
                     loss = criterion(outputs, masks)
                     val_loss += loss.item()
                     
-                    # Collect all validation samples
+                    # Store samples for visualization
                     all_images.append(images)
                     all_masks.append(masks)
                     all_preds.append((outputs > 0.5).float())
@@ -145,6 +150,7 @@ if __name__ == "__main__":
 
             print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Dice: {val_dice:.4f}")
 
+            # Save the best model
             if val_loss < best_val_loss:
                 if os.path.exists(f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth"):
                     os.remove(f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth")
@@ -154,25 +160,26 @@ if __name__ == "__main__":
                 model_save_path = f"./results/best_model_{args.network}_{dataset_name}_valloss_{best_val_loss:.2f}.pth"
                 torch.save(model.state_dict(), model_save_path)
                 print(f"Best model saved as {model_save_path} with Val Loss: {best_val_loss:.4f}")
-                
+
+                # Save validation visualization
                 save_validation_images(all_images, all_masks, all_preds, output_file=f"./results/{args.network}_validation_{dataset_name}_valloss_{best_val_loss:.2f}.png")
 
     elif args.mode == "test":
         # Test logic
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        # Load model
+        # Load the pre-trained model
         model.load_state_dict(torch.load(args.model_path))
         model.eval()
 
         print(f"Testing model: {args.model_path}")
         
-        # Calculate model parameters in millions
+        # Calculate model parameters
         total_params = sum(p.numel() for p in model.parameters())
         total_params_in_m = total_params / 1e6  # Convert to millions
         print(f"Model Parameters: {total_params_in_m:.2f}M")
 
-        # Initialize inference time tracker
+        # Initialize metrics and inference time trackers
         total_images = 0
         inference_times = []
         
@@ -187,7 +194,7 @@ if __name__ == "__main__":
         with torch.no_grad():
             for images, masks in tqdm(test_loader, desc="Testing"):
                 images, masks = images.to(device), masks.to(device)
-                batch_size = images.size(0)  # Get the number of images in the current batch
+                batch_size = images.size(0)
                 total_images += batch_size
                 
                 # Measure inference time
@@ -201,7 +208,7 @@ if __name__ == "__main__":
                 torch.cuda.synchronize()  # Ensure time measurement is accurate
                 inference_times.append(start_time.elapsed_time(end_time))  # Time in milliseconds
 
-                # Collect all validation samples
+                # Store test samples for visualization
                 all_images.append(images)
                 all_masks.append(masks)
                 all_preds.append((outputs > 0.5).float())
