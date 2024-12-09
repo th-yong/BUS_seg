@@ -1,3 +1,5 @@
 MT_Small_Dataset/
 __Pycache__/
 *.pth
+weights/
+*.txt
