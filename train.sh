@@ -1,0 +1,10 @@
+python main.py --mode train --dataset original --network unet --num_epochs 150 --lr 1e-4 > ./results/train_original_unet.txt
+python main.py --mode train --dataset fuzzy --network unet --num_epochs 150 --lr 1e-4 > ./results/train_fuzzy_unet.txt
+python main.py --mode train --dataset original --network attention_unet --num_epochs 300 --lr 1e-2 > ./results/train_original_attention_unet.txt
+python main.py --mode train --dataset fuzzy --network attention_unet --num_epochs 300 --lr 1e-2 > ./results/train_fuzzy_attention_unet.txt
+python main.py --mode train --dataset original --network unet_plus --num_epochs 200 --lr 1e-4 > ./results/train_original_unet_plus.txt
+python main.py --mode train --dataset fuzzy --network unet_plus --num_epochs 200 --lr 1e-4 > ./results/train_fuzzy_unet_plus.txt
+python main.py --mode train --dataset original --network CMUNeXt --num_epochs 200 --lr 1e-2 > ./results/train_original_CMUNeXt.txt
+python main.py --mode train --dataset fuzzy --network CMUNeXt --num_epochs 200 --lr 1e-2 > ./results/train_fuzzy_CMUNeXt.txt
+python main.py --mode train --dataset original --network SegResNet --num_epochs 300 --lr 1e-2 > ./results/train_original_SegResNet.txt
+python main.py --mode train --dataset fuzzy --network SegResNet --num_epochs 300 --lr 1e-2 > ./results/train_fuzzy_SegResNet.txt

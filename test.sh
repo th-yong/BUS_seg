@@ -1,0 +1,10 @@
+python main.py --mode test --dataset original --network unet --model_path ./results/best_model_unet_original_valloss_0.17.pth > ./results/test_original_unet.txt
+python main.py --mode test --dataset fuzzy --network unet --model_path ./results/weights/best_model_fuzzy_valloss_0.18.pth > ./results/test_fuzzy_unet.txt
+python main.py --mode test --dataset original --network attention_unet --model_path ./results/weights/best_model_attention_unet_original_valloss_0.16.pth > ./results/test_original_attention_unet.txt
+python main.py --mode test --dataset fuzzy --network attention_unet --model_path ./results/weights/best_model_attention_unet_fuzzy_valloss_0.18.pth > ./results/test_fuzzy_attention_unet.txt
+python main.py --mode test --dataset original --network unet_plus --model_path ./results/weights/best_model_unet_plus_original_valloss_0.15.pth > ./results/test_original_unet_plus.txt
+python main.py --mode test --dataset fuzzy --network unet_plus --model_path ./results/weights/best_model_unet_plus_fuzzy_valloss_0.20.pth > ./results/test_fuzzy_unet_plus.txt
+python main.py --mode test --dataset original --network CMUNeXt --model_path ./results/weights/best_model_CMUNeXt_original_valloss_0.19.pth > ./results/test_original_CMUNeXt.txt
+python main.py --mode test --dataset fuzzy --network CMUNeXt --model_path ./results/best_model_CMUNeXt_fuzzy_valloss_0.17.pth > ./results/test_fuzzy_CMUNeXt.txt
+python main.py --mode test --dataset original --network SegResNet --model_path ./results/weights/best_model_SegResNet_original_valloss_0.21.pth > ./results/test_original_SegResNet.txt
+python main.py --mode test --dataset fuzzy --network SegResNet --model_path ./results/weights/best_model_SegResNet_fuzzy_valloss_0.18.pth > ./results/test_fuzzy_SegResNet.txt

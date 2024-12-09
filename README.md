@@ -49,13 +49,13 @@ To provide a clearer understanding of the dataset and its annotations, we visual
 
 ## Benchmark Networks
 
-| Network          | Framework   | Original Code                                                              | Reference     |
-|------------------|-------------|----------------------------------------------------------------------------|---------------|
-| **U-Net**        | Caffe       | [GitHub](http://lmb.informatik.uni-freiburg.de/people/ronneber/u-net)      | MICCAI'15     |
-| **Attention U-Net** | PyTorch  | [GitHub](https://github.com/ozan-oktay/Attention-Gated-Networks)           | Arxiv'18      |
-| **U-Net++**      | PyTorch     | [GitHub](https://github.com/4uiiurz1/pytorch-nested-unet)                  | MICCAI'18     |
-| **SegResNet**    | PyTorch     | [GitHub](https://github.com/yassouali/pytorch-segmentation/tree/master)    | MICCAI'21     |
-| **CMUNeXt**      | PyTorch     | [GitHub](https://github.com/FengheTan9/CMUNeXt)                            | ISBI'24       |
+| Network             | Framework   | Original Code                                                              | Reference     |
+|---------------------|-------------|----------------------------------------------------------------------------|---------------|
+| **U-Net**           | Caffe       | [GitHub](http://lmb.informatik.uni-freiburg.de/people/ronneber/u-net)      | MICCAI'15     |
+| **Attention U-Net** | PyTorch     | [GitHub](https://github.com/ozan-oktay/Attention-Gated-Networks)           | Arxiv'18      |
+| **U-Net++**         | PyTorch     | [GitHub](https://github.com/4uiiurz1/pytorch-nested-unet)                  | MICCAI'18     |
+| **SegResNet**       | PyTorch     | [GitHub](https://github.com/yassouali/pytorch-segmentation/tree/master)    | MICCAI'21     |
+| **CMUNeXt**         | PyTorch     | [GitHub](https://github.com/FengheTan9/CMUNeXt)                            | ISBI'24       |
 
 ---
 
@@ -81,18 +81,43 @@ To evaluate the performance of each benchmark network on the **Original** and **
 ### 3. **Model Performance Evaluation**
 The evaluation results for each network (on **Original** and **Fuzzy** datasets) will be presented in the following format:
 
-| Network          | Dataset    | Parameters (M) | Dice Score       | Precision        | Recall           | F1 Score         | Inference Time (ms) |
-|------------------|------------|----------------|------------------|------------------|------------------|------------------|---------------------|
-| U-Net            | Original   | 31.04          | 0.7920 ± 0.1386  | 0.7857 ± 0.2003  | 0.8422 ± 0.1287  | 0.7918 ± 0.1388  | 10.05               |
-| U-Net            | Fuzzy      | 31.04          | 0.8141 ± 0.1106  | 0.8391 ± 0.1567  | 0.8206 ± 0.1357  | 0.8139 ± 0.1108  | 10.50               |
-| Attention U-Net  | Original   | 34.88          | 0.7531 ± 0.2254  | 0.7280 ± 0.2596  | 0.8431 ± 0.1656  | 0.7528 ± 0.2256  | 11.54               |
-| Attention U-Net  | Fuzzy      | 34.88          | 0.7226 ± 0.2041  | 0.7201 ± 0.2871  | 0.8114 ± 0.1234  | 0.7224 ± 0.2043  | 11.60               |
-| U-Net++          | Original   | 9.16           | 0.7995 ± 0.1115  | 0.8281 ± 0.1710  | 0.8137 ± 0.1496  | 0.7992 ± 0.1117  | 8.78                |
-| U-Net++          | Fuzzy      | 9.16           | 0.8017 ± 0.1107  | 0.8665 ± 0.1153  | 0.7733 ± 0.1706  | 0.8014 ± 0.1109  | 9.38                |
-| SegResNet        | Original   | 53.55          | 0.7359 ± 0.1333  | 0.7922 ± 0.1747  | 0.7155 ± 0.1729  | 0.7355 ± 0.1335  | 14.53               |
-| SegResNet        | Fuzzy      | 53.55          | 0.7397 ± 0.1583  | 0.7903 ± 0.2034  | 0.7267 ± 0.1817  | 0.7394 ± 0.1586  | 14.32               |
-| CMUNeXt          | Original   | 3.15           | 0.7163 ± 0.1949  | 0.7550 ± 0.2481  | 0.7114 ± 0.1602  | 0.7160 ± 0.1952  | 9.60                |
-| CMUNeXt          | Fuzzy      | 3.15           | 0.6807 ± 0.3162  | 0.7743 ± 0.3235  | 0.6227 ± 0.3196  | 0.6801 ± 0.3170  | 9.82                |
+| Network          | Dataset    | Parameters (M) | Dice Score           | Precision        | Recall           | F1 Score         | Inference Time (ms) |
+|------------------|------------|----------------|----------------------|------------------|------------------|------------------|---------------------|
+| U-Net            | Original   | 31.04          | 0.7958 ± 0.1652      | 0.8334 ± 0.1802  | 0.7801 ± 0.1889  | 0.7955 ± 0.1655  | 10.46               |
+| U-Net            | Fuzzy      | 31.04          | **0.8141 ± 0.1106**  | 0.8391 ± 0.1567  | 0.8206 ± 0.1357  | 0.8139 ± 0.1108  | 10.50               |
+| Attention U-Net  | Original   | 34.88          | 0.7531 ± 0.2254      | 0.7280 ± 0.2596  | 0.8431 ± 0.1656  | 0.7528 ± 0.2256  | 11.54               |
+| Attention U-Net  | Fuzzy      | 34.88          | 0.7226 ± 0.2041      | 0.7201 ± 0.2871  | 0.8114 ± 0.1234  | 0.7224 ± 0.2043  | 11.60               |
+| U-Net++          | Original   | 9.16           | 0.7995 ± 0.1115      | 0.8281 ± 0.1710  | 0.8137 ± 0.1496  | 0.7992 ± 0.1117  | 8.78                |
+| U-Net++          | Fuzzy      | 9.16           | 0.8017 ± 0.1107      | 0.8665 ± 0.1153  | 0.7733 ± 0.1706  | 0.8014 ± 0.1109  | 9.38                |
+| SegResNet        | Original   | 53.55          | 0.7359 ± 0.1333      | 0.7922 ± 0.1747  | 0.7155 ± 0.1729  | 0.7355 ± 0.1335  | 14.53               |
+| SegResNet        | Fuzzy      | 53.55          | 0.7397 ± 0.1583      | 0.7903 ± 0.2034  | 0.7267 ± 0.1817  | 0.7394 ± 0.1586  | 14.32               |
+| CMUNeXt          | Original   | 3.15           | 0.7163 ± 0.1949      | 0.7550 ± 0.2481  | 0.7114 ± 0.1602  | 0.7160 ± 0.1952  | 9.60                |
+| CMUNeXt          | Fuzzy      | 3.15           | 0.7722 ± 0.1391      | 0.7831 ± 0.2021  | 0.7987 ± 0.1499  | 0.7720 ± 0.1394  | 9.77                |
+
+## 3. **Top Models Visualization**
+
+Below are the segmentation results for the **Top Two Models** evaluated on the **Fuzzy** dataset. The visualization overlays the predicted segmentation with the ground truth.
+
+### **Color Legend**:
+- **Red**: Ground Truth (GT)
+- **Green**: Predicted Segmentation
+- **Yellow**: Overlap between Ground Truth and Prediction
+
+### **Best Model: U-Net**
+**File Path**: `./results/unet_test_fuzzy.png`
+
+<p align="center">
+ <img src="./results/unet_test_fuzzy.png" alt="U-Net fuzzy results visualization" width="800px">
+ <br>
+</p>
+
+### **Second Best Model: U-Net++**
+**File Path**: `./results/unet_plus_test_fuzzy.png`
+
+<p align="center">
+ <img src="./results/unet_plus_test_fuzzy.png" alt="U-Net++ fuzzy results visualization" width="800px">
+ <br>
+</p>
 
 ---
 

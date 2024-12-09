@@ -35,6 +35,10 @@ if __name__ == "__main__":
                         help="Specify the network architecture to use: " + ", ".join(NETWORKS.keys()))
     parser.add_argument('--model_path', type=str, required=False, default="./results/best_model.pth",
                         help="Path to the model file for testing (only used in 'test' mode).")
+    parser.add_argument('--num_epochs', type=int, required=False, default=100,
+                        help='number of total epochs to run')
+    parser.add_argument('--lr', type=float, required=False, default=1e-4,
+                        help='segmentation network learning rate')
     args = parser.parse_args()
 
     # Paths to data directories
@@ -63,17 +67,17 @@ if __name__ == "__main__":
     
     # Initialize batch size, num_epochs and patience
     batch_size = 2
-    num_epochs = 100
-    patience = 5
-
+    num_epochs = args.num_epochs
+    patience = 10
+    lr = args.lr
     # Initialize model, loss, and optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = NETWORKS[args.network]().to(device)
     criterion = DiceLoss()
 
     if args.mode == "train":
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10)
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=patience)
 
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
